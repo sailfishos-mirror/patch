@@ -16,6 +16,10 @@
 
 config_h_header = <(common|config)\.h>
 
+ifeq ($(RELEASE_TYPE),alpha)
+  news-check-regexp = "Unreleased changes"
+endif
+
 update-copyright-env = \
   UPDATE_COPYRIGHT_FORCE=1 \
   UPDATE_COPYRIGHT_USE_INTERVALS=2 \
