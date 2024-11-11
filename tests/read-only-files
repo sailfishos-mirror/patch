@@ -9,6 +9,7 @@
 . $srcdir/test-lib.sh
 
 require cat
+require chmod
 use_local_patch
 use_tmpdir
 

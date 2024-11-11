@@ -42,6 +42,7 @@ TESTS = \
 	git-cleanup \
 	garbage \
 	global-reject-files \
+	hardlinks \
 	inname \
 	line-numbers \
 	merge \

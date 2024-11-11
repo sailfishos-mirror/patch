@@ -10,37 +10,34 @@
 . $srcdir/test-lib.sh
 
 require cat
+require hardlinks
 use_local_patch
 use_tmpdir
 
 # ==============================================================
 
-echo one > f
+# Hardlinks between source files
 
-cat > f.diff <<EOF
+echo one > f
+ln f g
+
+cat > fg.diff <<EOF
 --- f.orig
 +++ f
 @@ -2 +2 @@
 -one
 +two
---- f.orig
-+++ f
+--- g.orig
++++ g
 @@ -2 +2 @@
--two
-+three
---- f.orig
-+++ f
-@@ -2 +2 @@
--three
-+four
+-one
++two
 EOF
 
-check 'patch -p0 < f.diff' <<EOF
+check 'patch -p0 < fg.diff' <<EOF
 patching file f
 Hunk #1 succeeded at 1 (offset -1 lines).
-patching file f
-Hunk #1 succeeded at 1 (offset -1 lines).
-patching file f
+patching file g
 Hunk #1 succeeded at 1 (offset -1 lines).
 EOF
 
@@ -48,30 +45,6 @@ check 'cat f.orig' <<EOF
 one
 EOF
 
-# ==============================================================
-
-echo one > f
-
-cat > f.diff <<EOF
---- f
-+++ /dev/null
-@@ -1 +0,0 @@
--one
---- /dev/null
-+++ f
-@@ -0,0 +1 @@
-+two
-EOF
-
-check 'patch --backup -p0 < f.diff' <<EOF
-patching file f
-patching file f
-EOF
-
-check 'cat f.orig' <<EOF
+check 'cat g.orig' <<EOF
 one
-EOF
-
-check 'cat f' <<EOF
-two
 EOF

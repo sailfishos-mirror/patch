@@ -9,13 +9,15 @@
 . $srcdir/test-lib.sh
 
 require cat
+require special_characters
 use_local_patch
 use_tmpdir
 
 # ==============================================================
 
 # Forbidden characters in Windows filenames:
-#   \ / : * ? " < > |
+#   \ / : * ? " < > | TAB
+# Filenames with trailing space characters
 
 cat > d.diff <<EOF
 --- "\\t \\040"

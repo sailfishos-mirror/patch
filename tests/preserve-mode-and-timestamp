@@ -8,6 +8,7 @@
 
 require cat
 require sed
+require chmod
 use_local_patch
 use_tmpdir
 
