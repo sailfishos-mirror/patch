@@ -175,7 +175,6 @@ main (int argc, char **argv)
     }
 
     posixly_correct = getenv ("POSIXLY_CORRECT") != 0;
-    backup_if_mismatch = ! posixly_correct;
     patch_get = ((val = getenv ("PATCH_GET"))
 		 ? numeric_string (val, true, "PATCH_GET value")
 		 : 0);
@@ -197,6 +196,7 @@ main (int argc, char **argv)
     if (set_utc && setenv ("TZ", "UTC0", 1) < 0)
       pfatal ("setenv");
 
+    backup_if_mismatch = ! posixly_correct;
     if (make_backups | backup_if_mismatch)
       backup_type = get_version (version_control_context, version_control);
 
