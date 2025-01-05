@@ -1,6 +1,6 @@
 /* safe path traversal functions for 'patch' */
 
-/* Copyright 2015-2024 Free Software Foundation, Inc.
+/* Copyright 2015-2025 Free Software Foundation, Inc.
 
    Written by Tim Waugh <twaugh@redhat.com> and
    Andreas Gruenbacher <agruenba@redhat.com>.

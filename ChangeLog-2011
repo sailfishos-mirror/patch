@@ -3658,7 +3658,7 @@ Sun Dec 17 17:29:48 1989  Jim Kingdon  (kingdon at hobbes.ai.mit.edu)
 	* patch.c: Initial revision
 
 
-Copyright 1989-2024 Free Software Foundation, Inc.
+Copyright 1989-2025 Free Software Foundation, Inc.
 Copyright 1984-1988 Larry Wall.
 
 This file is part of GNU Patch.

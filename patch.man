@@ -1116,7 +1116,7 @@ Computing how to merge a hunk is significantly harder than using the standard
 fuzzy algorithm.  Bigger hunks, more context, a bigger offset from the
 original location, and a worse match all slow the algorithm down.
 .SH COPYING
-Copyright \(co 1989\(en2024 Free Software Foundation, Inc.
+Copyright \(co 1989\(en2025 Free Software Foundation, Inc.
 .br
 Copyright \(co 1984\(en1986, 1988 Larry Wall.
 .PP

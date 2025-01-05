@@ -1,6 +1,6 @@
 /* patch - a program to apply diffs to original files */
 
-/* Copyright 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
    Copyright 1984-1988 Larry Wall
 
    This program is free software: you can redistribute it and/or modify

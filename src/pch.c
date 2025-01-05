@@ -1,6 +1,6 @@
 /* reading patches */
 
-/* Copyright 1990-2024 Free Software Foundation, Inc.
+/* Copyright 1990-2025 Free Software Foundation, Inc.
    Copyright 1986-1988 Larry Wall
 
    This program is free software: you can redistribute it and/or modify
