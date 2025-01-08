@@ -1018,7 +1018,8 @@ pfatal (char const *format, ...)
   va_start (args, format);
   vfprintf (stderr, format, args);
   va_end (args);
-  fprintf (stderr, " : %s\n", strerror (errnum));
+  fprintf (stderr, " : %s\n",
+	   errnum == EILSEQ ? "Invalid byte sequence" : strerror (errnum));
   fflush (stderr);
   fatal_exit ();
 }
@@ -1383,10 +1384,10 @@ init_time (void)
 }
 
 static char *
-parse_c_string (char const *str, char const **endp)
+parse_c_string (char const *s, char const **endp)
 {
   char *u, *v;
-  char const *s = str;
+
   assert (*s == '"');
   s++;
   u = v = xmalloc (strlen (s));
@@ -1446,11 +1447,6 @@ parse_c_string (char const *str, char const **endp)
 	    }
 	  default:
 	    goto fail;
-	}
-      if (c == '\n')
-	{
-	  int qlen = ckd_add (&qlen, s - str, 0) ? -1 : qlen;
-	  fatal ("quoted string %.*s...\" contains newline", qlen, str);
 	}
       *v++ = c;
     }
@@ -1777,12 +1773,20 @@ make_tempfile (struct outfile *out, char letter, char const *real_name,
 
   if (real_name && ! dry_run)
     {
-      idx_t namelen = strlen (real_name);
-      template = ximalloc (namelen + sizeof ".cXXXXXX");
-      sprintf (mempcpy (template, real_name, namelen), ".%cXXXXXX", letter);
+      /* Use the real name sans any newlines in the last component,
+	 followed by ".", LETTER, and 6 random chars.  */
+      char const *last = last_component (real_name);
+      idx_t realdirlen = last - real_name;
+      template = ximalloc (realdirlen + strlen (last) + sizeof ".cXXXXXX");
+      char *t = mempcpy (template, real_name, realdirlen);
+      for (char const *p = last; *p; p++)
+	t += (*t = *p) != '\n';
+      sprintf (t, ".%cXXXXXX", letter);
     }
   else
     {
+      /* In the temp dir, use the name "p", LETTER, and 6 random chars.  */
+
       static char const *tmpdir;
       static idx_t tmpdirlen;
 
@@ -1796,7 +1800,7 @@ make_tempfile (struct outfile *out, char letter, char const *real_name,
 	  for (int i = 0; i < ARRAY_SIZE (envnames); i++)
 	    {
 	      char const *val = getenv (envnames[i]);
-	      if (val && ! strchr (val, '\n'))
+	      if (val)
 		{
 		  tmpdir = val;
 		  break;

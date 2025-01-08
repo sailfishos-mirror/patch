@@ -431,8 +431,12 @@ traverse_next (struct cached_dirfd *dir, char **path, int keepfd,
   return entry;
 }
 
-/* Traverse PATHNAME.  Updates PATHNAME to point to the last path component and
-   returns a file descriptor to its parent directory (which can be AT_FDCWD).
+/* Traverse PATHNAME.
+
+   If REJECT_NL, fail if the PATHNAME's last component contains a newline.
+   Otherwise, if unsafe or PATHNAME is absolute, just return AT_FDCWD.
+   Otherwise, update PATHNAME to point to the last path component and
+   return a file descriptor to its parent directory (which can be AT_FDCWD).
    If KEEPFD is nonnegative, make sure that any cache entry for it is not
    removed from the cache (and KEEPFD remains open).
 
@@ -442,14 +446,23 @@ traverse_next (struct cached_dirfd *dir, char **path, int keepfd,
    up are off the lru list but in the hash table.
     */
 static int
-traverse_another_path (char **pathname, int keepfd)
+traverse_another_path (char **pathname, bool reject_nl, int keepfd)
 {
+  char *path = *pathname;
+  char *last = last_component (path);
+  if (reject_nl && strchr (last, '\n'))
+    {
+      errno = EILSEQ;
+      return DIRFD_INVALID;
+    }
+  if (unsafe || last == path || IS_ABSOLUTE_FILE_NAME (path))
+    return AT_FDCWD;
+
   static struct cached_dirfd cwd = {
     .fd = AT_FDCWD,
   };
 
   intmax_t misses = dirfd_cache_misses;
-  char *path = *pathname;
   struct cached_dirfd *dir = &cwd;
   struct symlink *stack = nullptr;
   idx_t steps = count_path_components (path);
@@ -462,13 +475,6 @@ traverse_another_path (char **pathname, int keepfd)
       errno = ELOOP;
       return DIRFD_INVALID;
     }
-
-  if (! *path || IS_ABSOLUTE_FILE_NAME (path))
-    return AT_FDCWD;
-
-  char *last = last_component (path);
-  if (last == path)
-    return AT_FDCWD;
 
   if (debug & 32)
     {
@@ -553,20 +559,15 @@ fail:
 
 /* Just traverse PATHNAME; see traverse_another_path(). */
 static int
-traverse_path (char **pathname)
+traverse_path (char **pathname, bool reject_nl)
 {
-  return traverse_another_path (pathname, DIRFD_INVALID);
+  return traverse_another_path (pathname, reject_nl, DIRFD_INVALID);
 }
 
 static int
 safe_xstat (char *pathname, struct stat *buf, int flags)
 {
-  int dirfd;
-
-  if (unsafe)
-    return fstatat (AT_FDCWD, pathname, buf, flags);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return fstatat (dirfd, pathname, buf, flags);
@@ -590,14 +591,22 @@ safe_lstat (char *pathname, struct stat *buf)
 int
 safe_open (char *pathname, int flags, mode_t mode)
 {
-  int dirfd;
-
-  if (unsafe)
-    return open (pathname, flags, mode);
-
-  dirfd = traverse_path (&pathname);
+  int creat_excl = flags & (O_CREAT | O_EXCL);
+  int dirfd = traverse_path (&pathname, creat_excl == (O_CREAT | O_EXCL));
   if (dirfd == DIRFD_INVALID)
     return -1;
+
+  /* If O_CREAT is set but O_EXCL is not, traverse_path does not
+     suffice for checking file names with '\n', so check by hand.  */
+  if (creat_excl == O_CREAT
+      && strchr (last_component (pathname), '\n')
+      && faccessat (dirfd, pathname, F_OK, AT_EACCESS) < 0
+      && errno == ENOENT)
+    {
+      errno = EILSEQ;
+      return -1;
+    }
+
   return openat (dirfd, pathname, flags, mode);
 }
 
@@ -605,21 +614,15 @@ safe_open (char *pathname, int flags, mode_t mode)
 int
 safe_rename (char *oldpath, char *newpath)
 {
-  int olddirfd, newdirfd;
-  int ret;
-
-  if (unsafe)
-    return rename (oldpath, newpath);
-
-  olddirfd = traverse_path (&oldpath);
+  int olddirfd = traverse_path (&oldpath, false);
   if (olddirfd == DIRFD_INVALID)
     return -1;
 
-  newdirfd = traverse_another_path (&newpath, olddirfd);
+  int newdirfd = traverse_another_path (&newpath, true, olddirfd);
   if (newdirfd == DIRFD_INVALID)
     return -1;
 
-  ret = renameat (olddirfd, oldpath, newdirfd, newpath);
+  int ret = renameat (olddirfd, oldpath, newdirfd, newpath);
   if (! ret)
     {
       invalidate_cached_dirfd (olddirfd, oldpath);
@@ -632,12 +635,7 @@ safe_rename (char *oldpath, char *newpath)
 int
 safe_mkdir (char *pathname, mode_t mode)
 {
-  int dirfd;
-
-  if (unsafe)
-    return mkdir (pathname, mode);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, true);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return mkdirat (dirfd, pathname, mode);
@@ -647,17 +645,11 @@ safe_mkdir (char *pathname, mode_t mode)
 int
 safe_rmdir (char *pathname)
 {
-  int dirfd;
-  int ret;
-
-  if (unsafe)
-    return rmdir (pathname);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
 
-  ret = unlinkat (dirfd, pathname, AT_REMOVEDIR);
+  int ret = unlinkat (dirfd, pathname, AT_REMOVEDIR);
   if (! ret)
     invalidate_cached_dirfd (dirfd, pathname);
   return ret;
@@ -667,12 +659,7 @@ safe_rmdir (char *pathname)
 int
 safe_unlink (char *pathname)
 {
-  int dirfd;
-
-  if (unsafe)
-    return unlink (pathname);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return unlinkat (dirfd, pathname, 0);
@@ -682,12 +669,7 @@ safe_unlink (char *pathname)
 int
 safe_symlink (char const *target, char *linkpath)
 {
-  int dirfd;
-
-  if (unsafe)
-    return symlink (target, linkpath);
-
-  dirfd = traverse_path (&linkpath);
+  int dirfd = traverse_path (&linkpath, true);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return symlinkat (target, dirfd, linkpath);
@@ -697,12 +679,7 @@ safe_symlink (char const *target, char *linkpath)
 int
 safe_chmod (char *pathname, mode_t mode)
 {
-  int dirfd;
-
-  if (unsafe)
-    return chmod (pathname, mode);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return fchmodat (dirfd, pathname, mode, 0);
@@ -712,12 +689,7 @@ safe_chmod (char *pathname, mode_t mode)
 int
 safe_lchown (char *pathname, uid_t owner, gid_t group)
 {
-  int dirfd;
-
-  if (unsafe)
-    return lchown (pathname, owner, group);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return fchownat (dirfd, pathname, owner, group, AT_SYMLINK_NOFOLLOW);
@@ -727,12 +699,7 @@ safe_lchown (char *pathname, uid_t owner, gid_t group)
 int
 safe_lutimens (char *pathname, struct timespec const times[2])
 {
-  int dirfd;
-
-  if (unsafe)
-    return utimensat (AT_FDCWD, pathname, times, AT_SYMLINK_NOFOLLOW);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return utimensat (dirfd, pathname, times, AT_SYMLINK_NOFOLLOW);
@@ -742,12 +709,7 @@ safe_lutimens (char *pathname, struct timespec const times[2])
 ssize_t
 safe_readlink (char *pathname, char *buf, size_t bufsiz)
 {
-  int dirfd;
-
-  if (unsafe)
-    return readlink (pathname, buf, bufsiz);
-
-  dirfd = traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return readlinkat (dirfd, pathname, buf, bufsiz);
@@ -757,7 +719,7 @@ safe_readlink (char *pathname, char *buf, size_t bufsiz)
 int
 safe_access (char *pathname, int mode)
 {
-  int dirfd = unsafe ? AT_FDCWD : traverse_path (&pathname);
+  int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
   return faccessat (dirfd, pathname, mode, AT_EACCESS);

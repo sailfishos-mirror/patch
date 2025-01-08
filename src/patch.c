@@ -277,11 +277,7 @@ main (int argc, char **argv)
 	  else if (pch_copy () || pch_rename ())
 	    outname = pch_name (! reverse_flag);
 	  else
-	    {
-	      if (strchr (inname, '\n'))
-		fatal ("input/output file name contains newline");
-	      outname = inname;
-	    }
+	    outname = inname;
 	}
 
       if (pch_git_diff () && ! skip_rest_of_patch)
@@ -904,8 +900,6 @@ backup_file_name_option (char const *option_type)
 {
   if (!*optarg)
     fatal ("backup %s is empty", option_type);
-  if (strchr (optarg, '\n'))
-    fatal ("backup %s contains newline", option_type);
   return xstrdup (optarg);
 }
 
@@ -992,8 +986,6 @@ get_some_switches (int argc, char **argv)
 		noreverse_flag = true;
 		break;
 	    case 'o':
-		if (strchr (optarg, '\n'))
-		  fatal ("output file name contains newline");
 		outfile = xstrdup (optarg);
 		break;
 	    case 'p':

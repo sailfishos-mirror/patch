@@ -126,23 +126,43 @@ check 'patch -f -p1 --dry-run < d.diff || echo status: $?' <<EOF
 checking file g
 EOF
 
+fixup='s/ file ab\.[^ ]*/ file ab.*/'
+check_ignoring_temp_file_name() {
+  pat=\'$1\'
+  unset arg1; eval ${2+"arg1=\\''$2'\\'"}
+  unset arg2; eval ${3+"arg2=\\''$3'\\'"}
+  check '
+    emit_patch '"$pat"' | patch '"$arg1"' '"$arg2"' >patch.out 2>&1
+    status=$?
+    sed "$fixup" patch.out
+    echo status: $status
+  '
+}
+
 nl='
 '
 nlname="a${nl}b"
 quoted_nlname='"a\nb"'
 
-check 'emit_patch "$quoted_nlname" | patch; echo status: $?' <<EOF
-$PATCH: **** quoted string "a\\n..." contains newline
+check_ignoring_temp_file_name "$quoted_nlname" <<EOF
+patching file 'a
+b'
+$PATCH: **** Can't rename file ab.* to 'a
+b' : Invalid byte sequence
 status: 2
 EOF
 
-check 'emit_patch foo | patch "$nlname"; echo status: $?' <<EOF
-$PATCH: **** input/output file name contains newline
+check_ignoring_temp_file_name foo "$nlname" <<EOF
+patching file 'a
+b'
+$PATCH: **** Can't rename file ab.* to 'a
+b' : Invalid byte sequence
 status: 2
 EOF
 
-check 'emit_patch foo | patch -o "$nlname"; echo status: $?' <<EOF
-$PATCH: **** output file name contains newline
+check_ignoring_temp_file_name foo -o "$nlname" <<EOF
+$PATCH: **** Can't create file 'a
+b' : Invalid byte sequence
 status: 2
 EOF
 
