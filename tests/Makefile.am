@@ -67,6 +67,10 @@ TESTS = \
 XFAIL_TESTS = \
 	dash-o-append \
 	context-format
+if OS_IS_HAIKU
+XFAIL_TESTS += \
+	preserve-mode-and-timestamp
+endif
 
 EXTRA_DIST = \
 	$(TESTS) \

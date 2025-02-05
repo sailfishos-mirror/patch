@@ -6,6 +6,9 @@
 
 . $srcdir/test-lib.sh
 
+# Note: This test fails on Haiku. This is normal; it is caused by
+# Haiku bug <https://dev.haiku-os.org/ticket/19213>.
+
 require cat
 require sed
 require chmod
