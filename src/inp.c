@@ -85,7 +85,7 @@ get_input_file (char *filename, char const *outname, mode_t file_type)
     char *diffbuf;
     char *getbuf;
 
-    if (inerrno < 0)
+    if (inerrno == -1)
       inerrno = stat_file (filename, &instat);
 
     /* Perhaps look for RCS or SCCS versions.  */

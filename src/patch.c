@@ -291,7 +291,7 @@ main (int argc, char **argv)
 
 	  if (! strcmp (inname, outname))
 	    {
-	      if (inerrno < 0)
+	      if (inerrno == -1)
 		inerrno = stat_file (inname, &instat);
 	      outstat = instat;
 	      outerrno = inerrno;

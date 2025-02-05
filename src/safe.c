@@ -332,7 +332,7 @@ static struct symlink *read_symlink(int dirfd, const char *name)
     {
       char *end;
 
-      if (cwd_stat_errno < 0)
+      if (cwd_stat_errno == -1)
 	{
 	  cwd_stat_errno = stat (".", &cwd_stat) == 0 ? 0 : errno;
 	  if (cwd_stat_errno)
