@@ -183,7 +183,8 @@ static void insert_cached_dirfd (struct cached_dirfd *entry, int keepfd)
 
   /* Only insert if the parent still exists. */
   if (! list_empty (&entry->children_link))
-    assert (hash_insert (cached_dirfds, entry) == entry);
+    if (hash_insert (cached_dirfds, entry) != entry)
+      xalloc_die ();
 }
 
 static void invalidate_cached_dirfd (int dirfd, const char *name)
