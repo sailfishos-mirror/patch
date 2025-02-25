@@ -118,6 +118,7 @@ static bool merge;
 static enum diff reject_format = NO_DIFF;  /* automatic */
 static bool make_backups;
 static bool backup_if_mismatch;
+static bool backup_if_mismatch_specified;
 static char const *version_control;
 static char const *version_control_context;
 static bool remove_empty_files;
@@ -196,7 +197,8 @@ main (int argc, char **argv)
     if (set_utc && setenv ("TZ", "UTC0", 1) < 0)
       pfatal ("setenv");
 
-    backup_if_mismatch = ! posixly_correct;
+    if (!backup_if_mismatch_specified)
+      backup_if_mismatch = !posixly_correct;
     if (make_backups | backup_if_mismatch)
       backup_type = get_version (version_control_context, version_control);
 
@@ -1050,9 +1052,11 @@ get_some_switches (int argc, char **argv)
 		usage (stdout, EXIT_SUCCESS);
 	    case CHAR_MAX + 5:
 		backup_if_mismatch = true;
+		backup_if_mismatch_specified = true;
 		break;
 	    case CHAR_MAX + 6:
 		backup_if_mismatch = false;
+		backup_if_mismatch_specified = true;
 		break;
 	    case CHAR_MAX + 7:
 		posixly_correct = true;
