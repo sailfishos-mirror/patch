@@ -57,6 +57,7 @@ TESTS = \
 	preserve-mode-and-timestamp \
 	quoted-filenames \
 	read-only-files \
+	regression-abe92e8010ab \
 	reject-format \
 	remember-backup-files \
 	remember-reject-files \
