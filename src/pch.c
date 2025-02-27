@@ -1765,9 +1765,10 @@ another_hunk (enum diff difftype, bool rev)
 	if (*s == ',') {
 	    idx_t last;
 	    s = scan_linenum (s + 1, &last);
-	    if (p_first >= IDX_MAX - p_ptrn_lines)
+	    ptrdiff_t diff = last - p_first;
+	    if (! (-1 <= diff && diff < IDX_MAX))
 	      malformed ();
-	    p_ptrn_lines += 1 - p_first;
+	    p_ptrn_lines = diff + 1;
 	}
 	else
 	    p_ptrn_lines = (*s != 'a');
