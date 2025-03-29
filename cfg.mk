@@ -18,6 +18,8 @@ config_h_header = <(common|config)\.h>
 
 ifeq ($(RELEASE_TYPE),alpha)
   news-check-regexp = "Unreleased changes"
+else
+  news-check-regexp = '^Changes in version $(VERSION_REGEXP):'
 endif
 
 release-prep-hook =
