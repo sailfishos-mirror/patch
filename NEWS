@@ -1,4 +1,4 @@
-Unreleased changes:
+Changes in version 2.8:
 
 * The --follow-symlinks option now applies to output files as well as input.
 * 'patch' now supports file timestamps after 2038 even on traditional
