@@ -571,6 +571,8 @@ safe_xstat (char *pathname, struct stat *buf, int flags)
   int dirfd = traverse_path (&pathname, false);
   if (dirfd == DIRFD_INVALID)
     return -1;
+  if (! strcmp (pathname, ""))
+    return EINVAL;
   return fstatat (dirfd, pathname, buf, flags);
 }
 

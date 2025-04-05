@@ -323,7 +323,8 @@ main (int argc, char **argv)
 	    }
 	}
 
-      if (read_only_behavior != RO_IGNORE
+      if (! skip_rest_of_patch
+	  && read_only_behavior != RO_IGNORE
 	  && ! inerrno && ! S_ISLNK (instat.st_mode)
 	  && safe_access (inname, W_OK) != 0)
 	{
