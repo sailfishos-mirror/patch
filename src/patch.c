@@ -616,7 +616,7 @@ main (int argc, char **argv)
 		      struct stat outstat;
 
 		      if (stat_file (outname, &outstat) != 0)
-			say ("Cannot stat file %s, skipping backup\n", outname);
+			say ("Cannot stat file %s, skipping backup\n", quotearg (outname));
 		      else
 			output_file (&(struct outfile) { .name = outname },
 				     &outstat, nullptr, nullptr,
