@@ -204,7 +204,10 @@ main (int argc, char **argv)
 
     init_output (&outstate);
     if (outfile)
-      outstate.ofp = open_outfile (outfile);
+      {
+        outstate.ofp = open_outfile (outfile);
+        read_only_behavior = RO_IGNORE;
+      }
 
     /* Make sure we clean up in case of disaster.  */
     init_signals ();

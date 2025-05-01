@@ -67,3 +67,8 @@ check 'patch -f -p0 --read-only=ignore < f.diff || echo "Status: $?"' <<EOF
 patching file f
 patching file f
 EOF
+
+check 'patch -o - f /dev/null || echo "Status: $?"' <<EOF
+patching file - (read from f)
+three
+EOF
