@@ -171,11 +171,11 @@ main (int argc, char **argv)
 
     val = getenv ("QUOTING_STYLE");
     {
-      int i = val ? argmatch (val, quoting_style_args, 0, 0) : -1;
+      int i = val ? argmatch (val, quoting_style_args, NULL, 0) : -1;
       set_quoting_style (nullptr, i < 0 ? shell_quoting_style : i);
     }
 
-    posixly_correct = getenv ("POSIXLY_CORRECT") != 0;
+    posixly_correct = getenv ("POSIXLY_CORRECT") != NULL;
     patch_get = ((val = getenv ("PATCH_GET"))
 		 ? numeric_string (val, true, "PATCH_GET value")
 		 : 0);
@@ -736,7 +736,7 @@ reinitialize_almost_everything (void)
 
     if (inname && ! explicit_inname) {
 	free (inname);
-	inname = 0;
+	inname = NULL;
     }
 
     in_offset = 0;
@@ -746,7 +746,7 @@ reinitialize_almost_everything (void)
 
     if (revision) {
 	free(revision);
-	revision = 0;
+	revision = NULL;
     }
 
     reverse_flag = reverse_flag_specified;
@@ -876,7 +876,7 @@ static char const *const option_help[] =
 "  --help  Output this help.",
 "",
 "Report bugs to <" PACKAGE_BUGREPORT ">.",
-0
+NULL
 };
 
 static void
@@ -1067,7 +1067,7 @@ get_some_switches (int argc, char **argv)
 		break;
 	    case CHAR_MAX + 8:
 		{
-		  int i = argmatch (optarg, quoting_style_args, 0, 0);
+		  int i = argmatch (optarg, quoting_style_args, NULL, 0);
 		  if (i < 0)
 		    {
 		      invalid_arg ("quoting style", optarg, i);

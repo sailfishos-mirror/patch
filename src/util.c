@@ -809,13 +809,13 @@ version_controller (char const *filename, bool readonly,
   idx_t filebaselen = strlen (filebase);
   idx_t maxfixlen = sizeof "SCCS/" - 1 + sizeof SCCSPREFIX - 1;
   idx_t maxtrysize = dirlen + filebaselen + maxfixlen + 1;
-  idx_t quotelen = quote_system_arg (0, filename);
+  idx_t quotelen = quote_system_arg (NULL, filename);
   idx_t maxgetsize = sizeof CLEARTOOL_CO + quotelen + maxfixlen;
   idx_t maxdiffsize =
     (sizeof SCCSDIFF1 + sizeof SCCSDIFF2 + sizeof DEV_NULL - 1
      + 2 * quotelen + maxfixlen);
   char *trybuf = ximalloc (maxtrysize);
-  char const *r = 0;
+  char const *r = NULL;
 
   char *dirend = mempcpy (trybuf, filename, dirlen);
 
@@ -823,7 +823,7 @@ version_controller (char const *filename, bool readonly,
      Some hosts don't report file name length errors.  */
 
   if ((trystat (trybuf, &cstat, dirend, "RCS/", filebase, RCSSUFFIX)
-       || trystat (trybuf, &cstat, dirend, "RCS/", filebase, 0)
+       || trystat (trybuf, &cstat, dirend, "RCS/", filebase, NULL)
        || trystat (trybuf, &cstat, dirend, filebase, RCSSUFFIX, nullptr))
       && ! (filestat
 	    && filestat->st_dev == cstat.st_dev
@@ -888,7 +888,7 @@ version_controller (char const *filename, bool readonly,
 	}
 
       if (diffbuf)
-	*diffbuf = 0;
+	*diffbuf = NULL;
 
       r = "ClearCase";
      }
@@ -905,7 +905,7 @@ version_controller (char const *filename, bool readonly,
 	}
 
       if (diffbuf)
-	*diffbuf = 0;
+	*diffbuf = NULL;
 
       r = "Perforce";
     }
@@ -1281,7 +1281,7 @@ static char *
 replace_slashes (char *filename)
 {
   char *f;
-  char *last_location_replaced = 0;
+  char *last_location_replaced = NULL;
   char const *component_start;
 
   for (f = filename + FILE_SYSTEM_PREFIX_LEN (filename);  ISSLASH (*f);  f++)

@@ -467,7 +467,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
     for (i = OLD;  i <= INDEX;  i++)
       if (p_name[i]) {
 	  free (p_name[i]);
-	  p_name[i] = 0;
+	  p_name[i] = NULL;
         }
     for (i = 0; i < ARRAY_SIZE (invalid_names); i++)
       invalid_names[i] = nullptr;
@@ -475,13 +475,13 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
       if (p_timestr[i])
 	{
 	  free(p_timestr[i]);
-	  p_timestr[i] = 0;
+	  p_timestr[i] = NULL;
 	}
     for (i = OLD; i <= NEW; i++)
       if (p_sha1[i])
 	{
 	  free (p_sha1[i]);
-	  p_sha1[i] = 0;
+	  p_sha1[i] = NULL;
 	}
     p_git_diff = false;
     for (i = OLD; i <= NEW; i++)
@@ -607,7 +607,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
 		  break;
 		}
 	    if (t == revision)
-		revision = 0;
+		revision = NULL;
 	    else {
 		char oldc = *t;
 		*t = '\0';
@@ -631,7 +631,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
 	    for (i = OLD; i <= NEW; i++)
 	      {
 		free (p_name[i]);
-		p_name[i] = 0;
+		p_name[i] = NULL;
 	      }
 	    if (! ((p_name[OLD] = parse_name (s + 11, strippath, &u))
 		   && c_isspace (*u)
@@ -640,7 +640,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
 	      for (i = OLD; i <= NEW; i++)
 		{
 		  free (p_name[i]);
-		  p_name[i] = 0;
+		  p_name[i] = NULL;
 		}
 	    p_git_diff = true;
 	    need_header = false;
@@ -884,7 +884,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
 	if (! posixly_correct && (p_name[OLD] || p_name[NEW]) && p_name[INDEX])
 	  {
 	    free (p_name[INDEX]);
-	    p_name[INDEX] = 0;
+	    p_name[INDEX] = NULL;
 	  }
 
 	for (i = OLD;  i <= INDEX;  i++)
@@ -1280,7 +1280,7 @@ another_hunk (enum diff difftype, bool rev)
 	    assert(p_end < hunkmax);
 	    p_Char[p_end] = *patchbuf;
 	    p_len[p_end] = 0;
-	    p_line[p_end] = 0;
+	    p_line[p_end] = NULL;
 	    switch (*patchbuf) {
 	    case '*':
 		if (strnEQ(patchbuf, "********", 8)) {
@@ -2029,9 +2029,9 @@ pch_swap (void)
     tp_line = p_line;
     tp_len = p_len;
     tp_char = p_Char;
-    p_line = 0;	/* force set_hunkmax to allocate again */
-    p_len = 0;
-    p_Char = 0;
+    p_line = NULL;	/* force set_hunkmax to allocate again */
+    p_len = NULL;
+    p_Char = NULL;
     set_hunkmax();
 
     /* now turn the new into the old */
@@ -2314,7 +2314,7 @@ do_ed_script (char *input_name, struct outfile *output, FILE *ofp)
 {
     char const *output_name = output->name;
     off_t beginning_of_this_line;
-    FILE *tmpfp = 0;
+    FILE *tmpfp = NULL;
     int tmpfd = -1; /* placate gcc's -Wmaybe-uninitialized */
 
     if (! dry_run && ! skip_rest_of_patch)

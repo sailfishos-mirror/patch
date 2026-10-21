@@ -156,7 +156,7 @@ merge_result (bool *first_result, intmax_t hunk, char const *what,
 	{
 	  Fputs (".\n", stdout);
 	  Fflush (stdout);
-	  last_what = 0;
+	  last_what = NULL;
 	}
       return;
     }
@@ -471,7 +471,7 @@ merge_hunk (intmax_t hunk, struct outstate *outstate,
 	  *somefailed = true;
 	}
     }
-  merge_result (&first_result, 0, 0, 0, 0);
+  merge_result (&first_result, 0, NULL, 0, 0);
 
   assert (last_frozen_line == where - 1);
   free (oldin);

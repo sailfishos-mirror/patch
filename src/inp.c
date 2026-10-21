@@ -41,7 +41,7 @@ re_input (void)
       if (i_buffer)
 	{
 	  free (i_buffer);
-	  i_buffer = 0;
+	  i_buffer = NULL;
 	  free (i_ptr);
 	}
 }
@@ -123,11 +123,11 @@ get_input_file (char *filename, char const *outname, mode_t file_type)
 		      {
 			say ("warning: Patching file %s, which does not match default %s version\n",
 			     quotearg (filename), cs);
-			cs = 0;
+			cs = NULL;
 		      }
 		  }
 		if (dry_run)
-		  cs = 0;
+		  cs = NULL;
 	    }
 
 	    if (cs && version_get (filename, cs, ! inerrno, elsewhere, getbuf,
