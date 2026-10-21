@@ -956,6 +956,7 @@ intuit_diff_type (bool need_header, mode_t *p_file_type)
 	      }
 
 	    if (i0 != NONE
+		&& name_is_valid (p_name[i0])
 		&& (i == NONE || (st[i].st_mode & S_IFMT) == file_type)
 		&& maybe_reverse (p_name[i == NONE ? i0 : i], i == NONE,
 				  i == NONE || st[i].st_size == 0)

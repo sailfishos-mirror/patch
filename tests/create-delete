@@ -295,3 +295,49 @@ EOF
 check 'cat target.orig' <<EOF
 data
 EOF
+
+# ================================================================
+# CVE-2026-XXXXX: Reverse-applying a patch should not create
+# out-of-tree files.
+
+cat > p.diff <<EOF
+--- ../invalid
++++ ../invalid
+@@ -1 +0,0 @@
+-data
+EOF
+
+check 'patch -p0 -t < p.diff || echo status: $?' <<EOF
+Ignoring potentially dangerous file name ../invalid
+can't find file to patch at input line 3
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+--------------------------
+|--- ../invalid
+|+++ ../invalid
+--------------------------
+No file to patch.  Skipping patch.
+1 out of 1 hunk ignored
+status: 1
+EOF
+
+cat > p.diff <<EOF
+--- $PWD/invalid	2025-01-01 12:00:00.000000000 +0000
++++ $PWD/invalid	1970-01-01 00:00:00.000000000 +0000
+@@ -1 +0,0 @@
+-data
+EOF
+
+check 'patch -p0 -t < p.diff || echo status: $?' <<EOF
+Ignoring potentially dangerous file name $PWD/invalid
+can't find file to patch at input line 3
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+--------------------------
+|--- $PWD/invalid	2025-01-01 12:00:00.000000000 +0000
+|+++ $PWD/invalid	1970-01-01 00:00:00.000000000 +0000
+--------------------------
+No file to patch.  Skipping patch.
+1 out of 1 hunk ignored
+status: 1
+EOF
