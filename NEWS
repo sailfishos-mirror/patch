@@ -1,4 +1,6 @@
-Unreleased changes:
+Changes in version 2.8.1:
+
+* Prevent creation of out-of-tree files (CVE-2026-115207).
 
 Changes in version 2.8:
 
