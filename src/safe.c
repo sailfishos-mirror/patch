@@ -552,7 +552,10 @@ safe_xstat (char *pathname, struct stat *buf, int flags)
   if (dirfd == DIRFD_INVALID)
     return -1;
   if (! strcmp (pathname, ""))
-    return EINVAL;
+    {
+      errno = ENOENT;
+      return -1;
+    }
   return fstatat (dirfd, pathname, buf, flags);
 }
 

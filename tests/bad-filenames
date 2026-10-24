@@ -205,8 +205,8 @@ EOF
 
 # Empty filenames are not allowed:
 
-check 'emit_patch f | patch -r- "" || echo status: $?' <<EOF
-File '' is not a regular file -- refusing to patch
-1 out of 1 hunk ignored
-status: 1
+check 'emit_patch f | ( patch -r- "" 2>&1 || echo status: $? ) | sed -e "s,.*\*\*\*\* ,," -e "s,file .* to \(.*\) : .*,file XXXXXX to \1,"' <<EOF
+patching file ''
+Can't rename file XXXXXX to ''
+status: 2
 EOF
